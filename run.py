@@ -2,8 +2,9 @@
 import sys
 
 def main(arguments):
-    outputFile = newOutputFile('PAV.table')
-    filesToUse = getFilesWithExtension(arguments,'excov')
+    outputPath = arguments[0]
+    outputFile = newOutputFile(outputPath)
+    filesToUse = getFilesWithExtension(arguments[1:],'excov')
     tabel = makePAVTable(filesToUse)
     outputFile.close()
 
@@ -51,8 +52,5 @@ def PAVForFile(readFile):
             errorGenes.append(contentId)
     result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
     return result
-            
-    
-    
 
 main(sys.argv[1:])
