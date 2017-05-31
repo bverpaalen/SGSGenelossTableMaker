@@ -19,6 +19,9 @@ def getFilesWithExtension(arguments,extension):
 def makePAVTable(files):
     for item in files:
         openFile = openFileForRead(item)
+        PAV = PAVForFile(openFile)
+        for item in PAV:
+            print(item+": "+str(PAV[item]))
         openFile.close()
 
 def openFileForRead(itemToRead):
@@ -26,5 +29,30 @@ def openFileForRead(itemToRead):
 
 def newOutputFile(fileName):
     return open(fileName,'w')
+
+def PAVForFile(readFile):
+    presentGenes = []
+    absentGenes = []
+    errorGenes = []
+    headerLine = readFile.readline().replace("\n","")
+    headers = headerLine.split(",")
+    geneIdIndex = headers.index("ID")
+    isLostIndex = headers.index("is_lost")
+
+    for line in readFile:
+        content = line.split(",")
+        contentIsLost = content[isLostIndex]
+        contentId = content[geneIdIndex]
+        if contentIsLost == "PRESENT":
+            presentGenes.append(contentId)
+        elif contentIsLost == "LOST":
+            absentGenes.append(contentId)
+        else:
+            errorGenes.append(contentId)
+    result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
+    return result
+            
+    
+    
 
 main(sys.argv[1:])
