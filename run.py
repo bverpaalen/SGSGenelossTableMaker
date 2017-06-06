@@ -4,10 +4,9 @@ import sys
 def main(arguments):
     #outputPath = arguments[0]
     geneTableFilePath = "output.table"
-    geneTableFile = appendRWFile(geneTableFilePath)
     filesToUse = getFilesWithExtension(arguments[0:],'excov')
-    tabel = makePAVTable(filesToUse,geneTableFile)
-    geneTableFile.close()
+    table = makePAVTable(filesToUse)
+    createTableFile(geneTableFilePath,table)
 
 def getFilesWithExtension(arguments,extension):
     filesWithExtension = []
@@ -18,12 +17,13 @@ def getFilesWithExtension(arguments,extension):
             filesWithExtension.append(argument)
     return filesWithExtension
 
-def makePAVTable(files,geneTableFile):
+def makePAVTable(files):
     totalPAVs = {}
+    tablePAVs = {}
     allGenes = []
 
     for item in files:
-        openFile = openFileForRead(item)
+        openFile = open(item,"r")
         PAV = PAVForFile(openFile)
         totalPAVs[openFile.name.split("/")[-1]] = PAV
         for sortItem in PAV:
@@ -32,18 +32,27 @@ def makePAVTable(files,geneTableFile):
                 if geneToAdd not in allGenes:
                     allGenes.append(geneToAdd)
         openFile.close()
-
+    
     for PAVname in totalPAVs:
+        PAVGenes = {}
         PAV = totalPAVs[PAVname]
+
         presentGenes = PAV['PRESENT']
         lostGenes = PAV['LOST']
         errorGenes = PAV['ERROR']
-
-def openFileForRead(itemToRead):
-    return open(itemToRead,'r')
-
-def appendRWFile(fileName):
-    return open(fileName,'a+')
+        
+        for gene in allGenes:
+            if gene in presentGenes:
+                PAVGenes[gene] = 1
+            elif gene in lostGenes:
+                PAVGenes[gene] = 0
+            elif gene in errorGenes:
+                PAVGenes[gene] = 2
+            else:
+                PAVGenes[gene] = 0
+        
+        totalPAVs[PAVname] = PAVGenes
+    return totalPAVs
 
 def PAVForFile(readFile):
     presentGenes = []
@@ -66,5 +75,52 @@ def PAVForFile(readFile):
             errorGenes.append(contentId)
     result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
     return result
+
+def createTableFile(outputFilePath,table):
+    oldTable = []
+    readingFile = open(outputFilePath,"r")
+    presentGenes = readingFile.readline().replace("\n","").split(",")
+    if(presentGenes == [""]):
+        presentGenes =['variationName']
+    for line in readingFile:
+        oldTable.append(line.replace("\n",""))
+    readingFile.close()
+
+    for variation in table:
+        variationLine = ""
+        variationLineList = [0] * len(presentGenes)
+        variationLineList[0] = variation
+        PAV = table[variation]
+        for gene in PAV:
+            genesToAdd = []
+            print(gene)
+            if gene in presentGenes:
+                geneIndex = presentGenes.index(gene)
+                print(geneIndex)
+                print(PAV[gene])
+                variationLineList[geneIndex] = PAV[gene]
+                print(variationLineList)
+            else:
+                genesToAdd.append(gene)
+                presentGenes.append(gene)
+                variationLineList.append(PAV[gene])
+                print(gene)
+        variationLine = listToCsv(variationLineList)
+        oldTable.append(variationLine)
+
+    print(presentGenes)
+    geneHeader = listToCsv(presentGenes) + listToCsv(genesToAdd) + "\n"
+    print(geneHeader)
+    outputFile = open(outputFilePath,'w')
+    outputFile.write(geneHeader)
+    for line in oldTable:
+        outputFile.write(line+"\n")
+    outputFile.close()
+
+def listToCsv(listToParse):
+    output = ""
+    for item in listToParse:
+        output += str(item)+","
+    return output[:-1]
 
 main(sys.argv[1:])
