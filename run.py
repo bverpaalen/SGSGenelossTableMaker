@@ -67,12 +67,14 @@ def PAVForFile(readFile):
         content = line.split(",")
         contentIsLost = content[isLostIndex]
         contentId = content[geneIdIndex]
+        
         if contentIsLost == "PRESENT":
             presentGenes.append(contentId)
         elif contentIsLost == "LOST":
             absentGenes.append(contentId)
         else:
             errorGenes.append(contentId)
+    
     result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
     return result
 
@@ -80,8 +82,10 @@ def createTableFile(outputFilePath,table):
     oldTable = []
     readingFile = open(outputFilePath,"r")
     presentGenes = readingFile.readline().replace("\n","").split(",")
+    
     if(presentGenes == [""]):
         presentGenes =['variationName']
+    
     for line in readingFile:
         oldTable.append(line.replace("\n",""))
     readingFile.close()
@@ -91,28 +95,24 @@ def createTableFile(outputFilePath,table):
         variationLineList = [0] * len(presentGenes)
         variationLineList[0] = variation
         PAV = table[variation]
+
         for gene in PAV:
             genesToAdd = []
-            print(gene)
             if gene in presentGenes:
                 geneIndex = presentGenes.index(gene)
-                print(geneIndex)
-                print(PAV[gene])
                 variationLineList[geneIndex] = PAV[gene]
-                print(variationLineList)
             else:
                 genesToAdd.append(gene)
                 presentGenes.append(gene)
                 variationLineList.append(PAV[gene])
-                print(gene)
+        
         variationLine = listToCsv(variationLineList)
         oldTable.append(variationLine)
-
-    print(presentGenes)
+    
     geneHeader = listToCsv(presentGenes) + listToCsv(genesToAdd) + "\n"
-    print(geneHeader)
     outputFile = open(outputFilePath,'w')
     outputFile.write(geneHeader)
+    
     for line in oldTable:
         outputFile.write(line+"\n")
     outputFile.close()
