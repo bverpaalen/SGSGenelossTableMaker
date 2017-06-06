@@ -2,11 +2,12 @@
 import sys
 
 def main(arguments):
-    outputPath = arguments[0]
-    outputFile = newOutputFile(outputPath)
-    filesToUse = getFilesWithExtension(arguments[1:],'excov')
-    tabel = makePAVTable(filesToUse)
-    outputFile.close()
+    #outputPath = arguments[0]
+    geneTableFilePath = "output.table"
+    geneTableFile = appendRWFile(geneTableFilePath)
+    filesToUse = getFilesWithExtension(arguments[0:],'excov')
+    tabel = makePAVTable(filesToUse,geneTableFile)
+    geneTableFile.close()
 
 def getFilesWithExtension(arguments,extension):
     filesWithExtension = []
@@ -17,19 +18,32 @@ def getFilesWithExtension(arguments,extension):
             filesWithExtension.append(argument)
     return filesWithExtension
 
-def makePAVTable(files):
+def makePAVTable(files,geneTableFile):
+    totalPAVs = {}
+    allGenes = []
+
     for item in files:
         openFile = openFileForRead(item)
         PAV = PAVForFile(openFile)
-        for item in PAV:
-            print(item+": "+str(PAV[item]))
+        totalPAVs[openFile.name.split("/")[-1]] = PAV
+        for sortItem in PAV:
+            genesToAdd = PAV[sortItem]
+            for geneToAdd in genesToAdd:
+                if geneToAdd not in allGenes:
+                    allGenes.append(geneToAdd)
         openFile.close()
+
+    for PAVname in totalPAVs:
+        PAV = totalPAVs[PAVname]
+        presentGenes = PAV['PRESENT']
+        lostGenes = PAV['LOST']
+        errorGenes = PAV['ERROR']
 
 def openFileForRead(itemToRead):
     return open(itemToRead,'r')
 
-def newOutputFile(fileName):
-    return open(fileName,'w')
+def appendRWFile(fileName):
+    return open(fileName,'a+')
 
 def PAVForFile(readFile):
     presentGenes = []
