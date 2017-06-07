@@ -4,7 +4,7 @@ import sys
 def main(arguments):
     #outputPath = arguments[0]
     geneTableFilePath = "output.table"
-    filesToUse = getFilesWithExtension(arguments[0:],'excov')
+    filesToUse = getFilesWithExtension(arguments,'excov')
     table = makePAVTable(filesToUse)
     createTableFile(geneTableFilePath,table)
 
@@ -64,22 +64,24 @@ def PAVForFile(readFile):
     isLostIndex = headers.index("is_lost")
 
     for line in readFile:
-        content = line.split(",")
-        contentIsLost = content[isLostIndex]
-        contentId = content[geneIdIndex]
+        if line != "\n":
+		content = line.split(",")
+        	contentIsLost = content[isLostIndex]
+        	contentId = content[geneIdIndex]
         
-        if contentIsLost == "PRESENT":
-            presentGenes.append(contentId)
-        elif contentIsLost == "LOST":
-            absentGenes.append(contentId)
-        else:
-            errorGenes.append(contentId)
+        	if contentIsLost == "PRESENT":
+            		presentGenes.append(contentId)
+        	elif contentIsLost == "LOST":
+            		absentGenes.append(contentId)
+        	else:
+            		errorGenes.append(contentId)
     
     result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
     return result
 
 def createTableFile(outputFilePath,table):
     oldTable = []
+    genesToAdd = []
     readingFile = open(outputFilePath,"r")
     presentGenes = readingFile.readline().replace("\n","").split(",")
     
@@ -97,7 +99,6 @@ def createTableFile(outputFilePath,table):
         PAV = table[variation]
 
         for gene in PAV:
-            genesToAdd = []
             if gene in presentGenes:
                 geneIndex = presentGenes.index(gene)
                 variationLineList[geneIndex] = PAV[gene]
