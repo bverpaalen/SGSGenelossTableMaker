@@ -65,23 +65,20 @@ def PAVForFile(readFile):
 
     for line in readFile:
         if line != "\n":
-		content = line.split(",")
-        	contentIsLost = content[isLostIndex]
-        	contentId = content[geneIdIndex]
-        
-        	if contentIsLost == "PRESENT":
-            		presentGenes.append(contentId)
-        	elif contentIsLost == "LOST":
-            		absentGenes.append(contentId)
-        	else:
-            		errorGenes.append(contentId)
-    
+            content = line.split(",")
+            contentIsLost = content[isLostIndex]
+            contentId = content[geneIdIndex]
+            if contentIsLost == "PRESENT":
+               	presentGenes.append(contentId)
+            elif contentIsLost == "LOST":
+            	absentGenes.append(contentId)
+            else:
+            	errorGenes.append(contentId)
     result = {"PRESENT":presentGenes,"LOST":absentGenes,"ERROR":errorGenes}
     return result
 
 def createTableFile(outputFilePath,table):
     oldTable = []
-    genesToAdd = []
     readingFile = open(outputFilePath,"r")
     presentGenes = readingFile.readline().replace("\n","").split(",")
     
@@ -93,30 +90,31 @@ def createTableFile(outputFilePath,table):
     readingFile.close()
 
     for variation in table:
+        genesToAdd = []
         variationLine = ""
         variationLineList = [0] * len(presentGenes)
         variationLineList[0] = variation
         PAV = table[variation]
 
         for gene in PAV:
-	    print(gene in presentGenes)
-	    print(gene)
             if gene in presentGenes:
                 geneIndex = presentGenes.index(gene)
                 variationLineList[geneIndex] = PAV[gene]
             else:
+                if gene == "g3659":
+                    print(presentGenes)
+                    print(gene in presentGenes)
                 genesToAdd.append(gene)
-                presentGenes.append(gene)
                 variationLineList.append(PAV[gene])
-        
+
         variationLine = listToCsv(variationLineList)
         oldTable.append(variationLine)
-    if genesToAdd != []:
-	print("presentGenes"+str(presentGenes))
-    	geneHeader = listToCsv(presentGenes) + listToCsv(genesToAdd) + "\n"
-    else:
-	print("Genes to add"+str(gentesToAdd))
-        geneHeader = listToCsv(presentGenes)
+        for gene in genesToAdd:
+            if gene == "g3659":
+                print(variation)
+                print(gene)
+            presentGenes.append(gene)
+    geneHeader = listToCsv(presentGenes) + "\n"
     outputFile = open(outputFilePath,'w')
     outputFile.write(geneHeader)
     
