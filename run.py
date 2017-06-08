@@ -101,18 +101,12 @@ def createTableFile(outputFilePath,table):
                 geneIndex = presentGenes.index(gene)
                 variationLineList[geneIndex] = PAV[gene]
             else:
-                if gene == "g3659":
-                    print(presentGenes)
-                    print(gene in presentGenes)
                 genesToAdd.append(gene)
                 variationLineList.append(PAV[gene])
 
         variationLine = listToCsv(variationLineList)
         oldTable.append(variationLine)
         for gene in genesToAdd:
-            if gene == "g3659":
-                print(variation)
-                print(gene)
             presentGenes.append(gene)
     geneHeader = listToCsv(presentGenes) + "\n"
     outputFile = open(outputFilePath,'w')
