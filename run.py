@@ -99,6 +99,8 @@ def createTableFile(outputFilePath,table):
         PAV = table[variation]
 
         for gene in PAV:
+	    print(gene in presentGenes)
+	    print(gene)
             if gene in presentGenes:
                 geneIndex = presentGenes.index(gene)
                 variationLineList[geneIndex] = PAV[gene]
@@ -109,8 +111,12 @@ def createTableFile(outputFilePath,table):
         
         variationLine = listToCsv(variationLineList)
         oldTable.append(variationLine)
-    
-    geneHeader = listToCsv(presentGenes) + listToCsv(genesToAdd) + "\n"
+    if genesToAdd != []:
+	print("presentGenes"+str(presentGenes))
+    	geneHeader = listToCsv(presentGenes) + listToCsv(genesToAdd) + "\n"
+    else:
+	print("Genes to add"+str(gentesToAdd))
+        geneHeader = listToCsv(presentGenes)
     outputFile = open(outputFilePath,'w')
     outputFile.write(geneHeader)
     
