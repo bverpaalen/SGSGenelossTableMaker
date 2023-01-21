@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import sys
+import os.path
 
 def main(arguments):
     #outputPath = arguments[0]
     geneTableFilePath = "output.table"
+
+    if not os.path.exists(geneTableFilePath):
+        open(geneTableFilePath, 'w')
+
     filesToUse = getFilesWithExtension(arguments,'excov')
     table = makePAVTable(filesToUse)
     createTableFile(geneTableFilePath,table)
